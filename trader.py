@@ -48,7 +48,7 @@ class Logger:
 
     def log_state(self, state: TradingState):
         if not self.STATE_COLUMN_LOGGED:
-            self.prefix_print("timestamp,product,buy_depth,sell_depth,market_trades,own_trades,position,observations")
+            self.prefix_print("timestamp,product,buy_depth,sell_depth,market_trades,own_trades,position,observations", "STATE")
         timestamp = str(state.timestamp)
         products = list(state.listings.keys())
 
