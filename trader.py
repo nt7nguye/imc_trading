@@ -48,7 +48,7 @@ class Logger:
 
     def log_state(self, state: TradingState):
         if not self.STATE_COLUMN_LOGGED:
-            self.prefix_print("timestamp,product,buy_depth,sell_depth,market_trades,own_trades,position,observations", "STATE")
+            self.prefix_print("timestamp;product;buy_depth;sell_depth;market_trades;own_trades;position;observations", "STATE")
         timestamp = str(state.timestamp)
         products = list(state.listings.keys())
 
@@ -121,9 +121,9 @@ class Trader:
             else:
                 # Is product == symbol ? TODO: check
                 if max_buy <= 9999:
-                    buy_order = Trade(product, max_buy, MAX_QUANT - position)
+                    buy_order = Trade(product, min_sell, MAX_QUANT - position)
                     trades[product].append(buy_order)
                 if min_sell >= 10000:
-                    sell_order = Trade(product, min_sell, -MAX_QUANT - position)
+                    sell_order = Trade(product, max_buy, -MAX_QUANT - position)
                     trades[product].append(sell_order)
         return trades
