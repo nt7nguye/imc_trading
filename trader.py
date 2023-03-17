@@ -71,12 +71,12 @@ class Logger:
                 own_trades = self.to_json(state.own_trades[product])
 
             # Positions
-            position = "{}"
+            position = 0
             if state.position.get(product) is not None:
                 position = self.to_json(state.position[product])
                 
             # Observations
-            observations = "{}"
+            observations = 0
             if state.observations.get(product) is not None:
                 observations = self.to_json(state.observations[product])
 

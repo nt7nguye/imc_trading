@@ -1,4 +1,4 @@
-timestamp,product,buy_depth,sell_depth,market_trades,own_trades,position,observations
+timestamp;product;buy_depth;sell_depth;market_trades;own_trades;position;observation
 0;PEARLS;{"9995": 30, "9998": 1};{"10005": -30};[];[];{};{}
 0;BANANAS;{"4945": 30, "4946": 1};{"4952": -30};[];[];{};{}
 100;PEARLS;{"9995": 30, "9996": 1};{"10002": -6, "10004": -1, "10005": -30};[{"symbol": "PEARLS", "price": 10002.0, "quantity": 1, "buyer": "", "seller": "", "timestamp": 100}];[];{};{}
