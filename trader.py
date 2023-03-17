@@ -33,13 +33,68 @@ class ExponentialMovingAverage:
     def get_average(self):
         return self.value
 
+class Logger:
+    ENABLED = True
+    STATE_COLUMN_LOGGED = False
+
+    def __init__(self, ENABLED: bool=True):
+        self.ENABLED = ENABLED
+    
+    def prefix_print(self, string: str, prefix: str="LOG"):
+        print(f"\n{prefix}: {string}\n")
+
+    def to_json(self, o: Any) -> str:
+        return json.dumps(o, cls=ProsperityEncoder)
+
+    def log_state(self, state: TradingState):
+        if not self.STATE_COLUMN_LOGGED:
+            self.prefix_print("timestamp,product,buy_depth,sell_depth,market_trades,own_trades,position,observations")
+        timestamp = str(state.timestamp)
+        products = list(state.listings.keys())
+
+        for product in products:
+            # Order depths
+            buy_depth = "{}"
+            sell_depth = "{}"
+            if state.order_depths.get(product) is not None:
+                buy_depth =  self.to_json(state.order_depths[product].buy_orders)
+                sell_depth = self.to_json(state.order_depths[product].sell_orders)
+            
+            # Market trades
+            market_trades = "[]"
+            if state.market_trades.get(product) is not None:
+                market_trades = self.to_json(state.market_trades[product])
+            
+            # Own trades 
+            own_trades = "[]"
+            if state.own_trades.get(product) is not None:
+                own_trades = self.to_json(state.own_trades[product])
+
+            # Positions
+            position = "{}"
+            if state.position.get(product) is not None:
+                position = self.to_json(state.position[product])
+                
+            # Observations
+            observations = "{}"
+            if state.observations.get(product) is not None:
+                observations = self.to_json(state.observations[product])
+
+            row = [timestamp, product, buy_depth, sell_depth, market_trades, own_trades, position, observations]
+            self.prefix_print(';'.join(row), "STATE")
+
 class Trader:
-    ave = {
-        "BANANAS": ExponentialMovingAverage()        
-    } 
+    logger: Logger
+
+    def __init__(self): 
+        self.logger=Logger(True)
 
     def run(self, state: TradingState) -> Dict[str, List[Order]]:
-        result = {}
+        # Log
+        self.logger.log_state(state)
+        
+        # Trade builder
+        trades = {}
         for product, depth in state.order_depths.items():
             # try simple +1 buy price and -1 sell price
             # Max buy price
@@ -52,25 +107,23 @@ class Trader:
             # Our inventory
             position = 0 if state.position.get(product) is None else state.position[product]
 
-            result[product] = []
+            trades[product] = []
 
             if product == "BANANAS":
-
                 if position <= 0:
                     # buy
-                    buy_order = Trade(product, max_buy + 1, MAX_QUANT if position == 0 else -position)
-                    result[product].append(buy_order)
+                    buy_order = Trade(product, max_buy, MAX_QUANT if position == 0 else -position)
+                    trades[product].append(buy_order)
                 else:
                     # sell
-                    sell_order = Trade(product, min_sell - 1, -position)
-                    result[product].append(sell_order)
+                    sell_order = Trade(product, min_sell, -position)
+                    trades[product].append(sell_order)
             else:
-                continue
                 # Is product == symbol ? TODO: check
-                if max_buy < 9999:
-                    buy_order = Trade(product, max_buy + 1, MAX_QUANT - position)
-                    result[product].append(buy_order)
-                if min_sell > 10001:
-                    sell_order = Trade(product, min_sell - 1, -MAX_QUANT - position)
-                    result[product].append(sell_order)
-        return result
+                if max_buy <= 9999:
+                    buy_order = Trade(product, max_buy, MAX_QUANT - position)
+                    trades[product].append(buy_order)
+                if min_sell >= 10000:
+                    sell_order = Trade(product, min_sell, -MAX_QUANT - position)
+                    trades[product].append(sell_order)
+        return trades

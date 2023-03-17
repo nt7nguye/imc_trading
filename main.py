@@ -2,7 +2,7 @@
 import sys
 from datamodel import *
 from sample_trade import SampleTrade
-from data_dump_trader import Trader
+from trader import Trader
 import traceback
 
 def run_sample() -> int:
