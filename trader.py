@@ -47,8 +47,11 @@ class Logger:
         return json.dumps(o, cls=ProsperityEncoder)
 
     def log_state(self, state: TradingState):
+        if not self.ENABLED:
+            return
         if not self.STATE_COLUMN_LOGGED:
             self.prefix_print("timestamp;product;buy_depth;sell_depth;market_trades;own_trades;position;observations", "STATE")
+            self.STATE_COLUMN_LOGGED = True
         timestamp = str(state.timestamp)
         products = list(state.listings.keys())
 
@@ -71,12 +74,12 @@ class Logger:
                 own_trades = self.to_json(state.own_trades[product])
 
             # Positions
-            position = 0
+            position = "0"
             if state.position.get(product) is not None:
                 position = self.to_json(state.position[product])
                 
             # Observations
-            observations = 0
+            observations = "0"
             if state.observations.get(product) is not None:
                 observations = self.to_json(state.observations[product])
 
@@ -112,7 +115,7 @@ class Trader:
             if product == "BANANAS":
                 if position <= 0:
                     # buy
-                    buy_order = Trade(product, max_buy, MAX_QUANT if position == 0 else -position)
+                    buy_order = Trade(product, max_buy, -position)
                     trades[product].append(buy_order)
                 else:
                     # sell
